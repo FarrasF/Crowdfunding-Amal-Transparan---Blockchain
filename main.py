@@ -1,9 +1,8 @@
 from blockchain import Blockchain
 
-# 1. Inisialisasi Blockchain
 amal_chain = Blockchain()
 
-# 2. Data Aliran Dana Amal (4 Aktor: Donatur -> Yayasan -> Vendor -> Penerima)
+# 4 aktor = donatur, yayasan amal, vendor toko, penerima manfaat
 transaksi = [
     {"Aktor": "Donatur (Budi)",    "Aksi": "Kirim Donasi",  "Nominal": "Rp 50.000.000", "Keterangan": "Transfer ke rekening kampanye"},
     {"Aktor": "Yayasan Amal",      "Aksi": "Alokasi Dana",  "Nominal": "Rp 50.000.000", "Keterangan": "Beli material semen & besi ke vendor"},
@@ -11,11 +10,10 @@ transaksi = [
     {"Aktor": "Penerima Manfaat",  "Aksi": "Terima Bantuan","Nominal": "Rp 50.000.000", "Keterangan": "Material 100% diterima warga di lapangan"}
 ]
 
-# Tambahkan setiap transaksi ke dalam blockchain
 for tx in transaksi:
     amal_chain.add_block(tx)
 
-# 3. Tampilkan Riwayat Blockchain
+# riwayat
 print("\n" + "=" * 65)
 print("     SISTEM CROWDFUNDING & AMAL TRANSPARAN BERBASIS BLOCKCHAIN")
 print("=" * 65)
