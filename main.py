@@ -2,8 +2,9 @@ from block import Block
 from pow import proof_of_work
 from pos import proof_of_stake
 
+# PoW
+# Jalankan PoW dengan difficulty 2, 3, 4, 5
 
-# Proof of Work
 print("=" * 60)
 print("PROOF OF WORK - Sistem Crowdfunding & Amal Transparan")
 print("=" * 60)
@@ -35,7 +36,7 @@ for difficulty in [2, 3, 4, 5]:
 
     hasil_pow.append((difficulty, block.nonce, waktu, block.hash))
 
-# Tabel ringkasan untuk laporan (Soal 1)
+# Tabel ringkasan untuk laporan
 print("\n\n" + "=" * 90)
 print("TABEL HASIL EKSPERIMEN PoW (untuk laporan)")
 print("=" * 90)
@@ -45,7 +46,7 @@ for difficulty, nonce, waktu, hash_result in hasil_pow:
     print(f"{difficulty:<12}{nonce:<12}{waktu:<15.4f}{hash_result}")
 
 
-# Proof of Stake 
+# PoS
 print("\n\n" + "=" * 60)
 print("PROOF OF STAKE - Validator Jaringan Crowdfunding Amal")
 print("=" * 60)
@@ -53,15 +54,14 @@ print("=" * 60)
 # Validator disesuaikan dengan aktor pada project crowdfunding amal
 # (pihak yang memvalidasi/mencatat setiap transaksi dana)
 
-# Percobaan 1: stake awal
+# stake awal
 validators_awal = {
     "Yayasan Amal": 10,
     "Vendor Toko": 20,
     "Auditor Independen": 30,
     "Perwakilan Donatur": 40
 }
-
-# Percobaan 2: stake diubah
+# stake diubah
 validators_ubah = {
     "Yayasan Amal": 70,
     "Vendor Toko": 10,
