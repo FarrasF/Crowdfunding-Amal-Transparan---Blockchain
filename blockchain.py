@@ -9,12 +9,9 @@ class Blockchain:
         ]
 
     def create_genesis_block(self):
-
         return Block(
             index=0,
-            data={
-                "message": "Genesis Block"
-            },
+            data={"info": "Genesis Block - Sistem Donasi & Amal Transparan Dimulai"},
             previous_hash="0"
         )
 
