@@ -8,18 +8,10 @@ def proof_of_work(block, difficulty):
 
     start_time = time.time()
 
+    block.hash = block.calculate_hash()
     while not block.hash.startswith(target):
-
         block.nonce += 1
-
-        block.hash = hashlib.sha256(
-            (
-                str(block.index)
-                + str(block.data)
-                + block.previous_hash
-                + str(block.nonce)
-            ).encode()
-        ).hexdigest()
+        block.hash = block.calculate_hash()
 
     end_time = time.time()
 

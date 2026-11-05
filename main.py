@@ -1,8 +1,8 @@
 from block import Block
+from blockchain import Blockchain
 from pow import proof_of_work
 from pos import proof_of_stake
 
-<<<<<<< HEAD
 amal_chain = Blockchain()
 
 # 4 aktor = donatur, yayasan amal, vendor toko, penerima manfaat
@@ -20,7 +20,18 @@ for tx in transaksi:
 print("\n" + "=" * 65)
 print("     SISTEM CROWDFUNDING & AMAL TRANSPARAN BERBASIS BLOCKCHAIN")
 print("=" * 65)
-=======
+
+for block in amal_chain.chain:
+    print(f"\n[Block #{block.index}]")
+    print(f"Timestamp    : {block.timestamp}")
+    print(f"Data         : {block.data}")
+    print(f"Previous Hash: {block.previous_hash}")
+    print(f"Hash         : {block.hash}")
+
+print("\n" + "-" * 65)
+print(f"Status Validitas Blockchain: {'VALID' if amal_chain.is_valid() else 'TIDAK VALID'}")
+print("-" * 65)
+
 # PoW
 # Jalankan PoW dengan difficulty 2, 3, 4, 5
 
@@ -37,24 +48,24 @@ data_block = {
 }
 
 hasil_pow = []
->>>>>>> ba63876245d8a4282c7de87a56582fe45a3e6736
+
 
 for difficulty in [2, 3, 4, 5]:
 
-    block = Block(
+    b = Block(
         index=1,
         data=data_block,
         previous_hash="0"
     )
 
-    print(f"\nData Block      : {block.data}")
+    print(f"\nData Block      : {b.data}")
     print(f"Difficulty      : {difficulty}")
 
-    waktu = proof_of_work(block, difficulty)
+    waktu = proof_of_work(b, difficulty)
 
-    print(f"Hash            : {block.hash}")
+    print(f"Hash            : {b.hash}")
 
-    hasil_pow.append((difficulty, block.nonce, waktu, block.hash))
+    hasil_pow.append((difficulty, b.nonce, waktu, b.hash))
 
 # Tabel ringkasan untuk laporan
 print("\n\n" + "=" * 90)
