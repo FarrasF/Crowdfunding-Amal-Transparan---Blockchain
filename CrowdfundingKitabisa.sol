@@ -6,9 +6,14 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 
 /// @title CrowdfundingKitabisa - Penggalangan dana transparan (model donasi)
-/// @notice Alur: Penggalang membuat kampanye (PENDING) -> Admin memverifikasi
-///         (ACTIVE / REJECTED) -> Donatur berdonasi -> Penggalang menarik dana
-///         bertahap disertai keterangan -> Penggalang menutup kampanye (CLOSED).
+/// @notice Dua peran:
+///         - Admin (owner)  : satu-satunya yang membuat kampanye, memverifikasi,
+///                            menarik dana, dan menutup kampanye.
+///         - Donatur        : alamat mana pun selain admin; berdonasi dan
+///                            menerima NFT bukti donasi.
+///         Alur: Admin membuat kampanye (PENDING) -> Admin memverifikasi
+///         (ACTIVE / REJECTED) -> Donatur berdonasi -> Admin menarik dana
+///         bertahap disertai keterangan -> Admin menutup kampanye (CLOSED).
 ///         Modul 6: setiap donasi menghasilkan NFT (ERC-721) sebagai bukti donasi.
 contract CrowdfundingKitabisa is ERC721URIStorage {
     // ---------------------------------------------------------------
@@ -17,7 +22,7 @@ contract CrowdfundingKitabisa is ERC721URIStorage {
     enum Status {
         PENDING,   // menunggu verifikasi admin
         ACTIVE,    // terverifikasi, menerima donasi
-        CLOSED,    // ditutup oleh penggalang
+        CLOSED,    // ditutup oleh admin
         REJECTED   // ditolak admin
     }
 
@@ -35,7 +40,7 @@ contract CrowdfundingKitabisa is ERC721URIStorage {
     // ---------------------------------------------------------------
     // 2. STATE VARIABLES
     // ---------------------------------------------------------------
-    address public owner; // admin tunggal (verifikator)
+    address public owner; // admin tunggal (pembuat & verifikator kampanye)
     uint256 private nextCampaignId = 1;
 
     mapping(uint256 => Campaign) public campaigns;
@@ -74,7 +79,7 @@ contract CrowdfundingKitabisa is ERC721URIStorage {
     // 3. CUSTOM ERRORS
     // ---------------------------------------------------------------
     error OnlyOwner();
-    error OnlyCreator();
+    error OwnerCannotDonate();
     error CampaignNotFound(uint256 id);
     error InvalidInput();
     error InvalidStatus(Status current);
@@ -137,12 +142,12 @@ contract CrowdfundingKitabisa is ERC721URIStorage {
     // 6. FUNGSI
     // ---------------------------------------------------------------
 
-    /// @notice 1. Penggalang membuat kampanye baru (status PENDING)
+    /// @notice 1. Admin membuat kampanye baru (status PENDING)
     function createCampaign(
         string calldata _title,
         uint256 _target,
         uint256 _durationInDays
-    ) external returns (uint256) {
+    ) external onlyOwner returns (uint256) {
         if (bytes(_title).length == 0 || _target == 0 || _durationInDays == 0) {
             revert InvalidInput();
         }
@@ -182,10 +187,13 @@ contract CrowdfundingKitabisa is ERC721URIStorage {
         emit CampaignVerified(_id, c.status, msg.sender);
     }
 
-    /// @notice 3. Donatur berdonasi (kirim ETH bersama transaksi)
+    /// @notice 3. Donatur berdonasi (kirim ETH bersama transaksi).
+    ///         Admin tidak boleh berdonasi, supaya total donasi tidak bisa
+    ///         digelembungkan oleh pihak yang juga menarik dananya.
     function donate(uint256 _id) external payable campaignExists(_id) {
         Campaign storage c = campaigns[_id];
 
+        if (msg.sender == owner) revert OwnerCannotDonate();
         if (c.status != Status.ACTIVE) revert InvalidStatus(c.status);
         if (block.timestamp >= c.deadline) revert CampaignExpired();
         if (msg.value == 0) revert InvalidInput();
@@ -199,15 +207,14 @@ contract CrowdfundingKitabisa is ERC721URIStorage {
         _mintReceipt(_id, msg.sender, msg.value);
     }
 
-    /// @notice 4. Penggalang menarik dana (bertahap) dengan keterangan penggunaan
+    /// @notice 4. Admin menarik dana (bertahap) dengan keterangan penggunaan
     function withdraw(
         uint256 _id,
         uint256 _amount,
         string calldata _purpose
-    ) external campaignExists(_id) {
+    ) external onlyOwner campaignExists(_id) {
         Campaign storage c = campaigns[_id];
 
-        if (msg.sender != c.creator) revert OnlyCreator();
         if (c.status != Status.ACTIVE && c.status != Status.CLOSED) {
             revert InvalidStatus(c.status);
         }
@@ -225,11 +232,10 @@ contract CrowdfundingKitabisa is ERC721URIStorage {
         emit FundsWithdrawn(_id, msg.sender, _amount, _purpose);
     }
 
-    /// @notice 5. Penggalang menutup kampanye (berhenti menerima donasi)
-    function closeCampaign(uint256 _id) external campaignExists(_id) {
+    /// @notice 5. Admin menutup kampanye (berhenti menerima donasi)
+    function closeCampaign(uint256 _id) external onlyOwner campaignExists(_id) {
         Campaign storage c = campaigns[_id];
 
-        if (msg.sender != c.creator) revert OnlyCreator();
         if (c.status != Status.ACTIVE) revert InvalidStatus(c.status);
 
         c.status = Status.CLOSED;
@@ -250,7 +256,7 @@ contract CrowdfundingKitabisa is ERC721URIStorage {
         return campaigns[_id];
     }
 
-    /// @notice Saldo yang masih bisa ditarik penggalang
+    /// @notice Saldo yang masih bisa ditarik admin
     function availableBalance(uint256 _id)
         external
         view
