@@ -19,7 +19,10 @@ scripts/deploy.js                    deploy + menulis deployment.json
 scripts/seed.js                      (opsional) mengisi data contoh
 test/CrowdfundingKitabisa.test.js    tes otomatis (15 skenario)
 hardhat.config.js                    solc 0.8.28, evm cancun, jaringan localhost
-app.py                               aplikasi Streamlit
+app.py                               UI Streamlit AmalKita (Modul 11)
+contract_service.py                  lapisan web3.py: baca data, kirim transaksi, terjemah error kontrak
+theme.css                            desain visual (earth-tone) dari AmalKita
+app_modul10.py                       versi sederhana Modul 10 (cadangan)
 requirements.txt                     dependensi Python
 ```
 
@@ -79,7 +82,31 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 streamlit run app.py
 ```
-Buka alamat yang tampil (biasanya http://localhost:8501), lalu klik **Connect Wallet**.
+Buka alamat yang tampil (biasanya http://localhost:8501). Klik **Connect Wallet** (opsional) atau pilih
+**Akun aktif** di bagian atas halaman. Jalankan `seed.js` dulu agar tampilan tidak kosong.
+
+## Modul 11: UI dan hubungannya dengan smart contract
+
+Tampilan memakai desain AmalKita, tetapi seluruh data dan aksi memakai smart contract asli
+(bukan data dummy).
+
+| Halaman (tab) | Fungsi kontrak yang dipakai |
+|---|---|
+| Dashboard | `totalCampaigns`, `getCampaign`, `totalReceipts`, `owner` |
+| Program Donasi (+ Detail Kampanye) | `getCampaign`, `availableBalance`, `getReceipt`, event log |
+| Donasi | `donate` (payable) lalu NFT dicetak (`ReceiptMinted`) |
+| Kelola (Admin) | `createCampaign`, `verifyCampaign`, `withdraw`, `closeCampaign` |
+| NFT Bukti Donasi | `getReceipt`, `getReceiptHistory`, `ownerOf` |
+| Wallet & Transaksi | saldo akun, MetaMask, riwayat dari event kontrak |
+
+Catatan penting:
+- Satuan dana adalah **ETH** (bukan Rupiah), karena kontrak bekerja dengan wei.
+- Kontrak tidak menyimpan deskripsi, kategori, atau gambar kampanye. Kartu hanya menampilkan data on-chain.
+- MetaMask dipakai untuk menghubungkan wallet dan menentukan akun. Pada demo lokal, transaksi
+  ditandatangani oleh akun Hardhat yang dipilih di **Akun aktif** (akun yang sama dengan yang diimpor ke MetaMask).
+  Jika wallet MetaMask yang terhubung adalah akun Hardhat, akun aktif otomatis mengikutinya.
+- Aksi terlarang tetap bisa dicoba (mis. donatur membuat kampanye) untuk menunjukkan kontrak menolaknya.
+- Screenshot contoh ada di `docs/screenshots/`. Buat screenshot dan video 3-5 menit dari jalanan Anda sendiri untuk laporan.
 
 ## Tes otomatis
 ```
